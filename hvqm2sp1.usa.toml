@@ -1,0 +1,8 @@
+text_offset = 0x0B14B0
+text_size = 0x5D0
+text_address = 0x04001080
+rom_file_path = "baserom.usa.z64"
+output_file_path = "rsp/hvqm2sp1.cpp"
+output_function_name = "hvqm2sp1"
+extra_indirect_branch_targets = [
+]
