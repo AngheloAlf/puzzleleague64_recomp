@@ -44,6 +44,7 @@ target_compile_options(RecompiledFuncs PRIVATE
     # -Wno-unused-but-set-variable
     -fno-strict-aliasing
     -ggdb
+    -Wno-implicit-function-declaration
 )
 
 target_include_directories(RecompiledFuncs PRIVATE
