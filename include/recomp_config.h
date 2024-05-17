@@ -6,8 +6,8 @@
 #include "../ultramodern/config.hpp"
 
 namespace recomp {
-    constexpr std::u8string_view program_id = u8"drmario64_recomp";
-    constexpr std::u8string_view mm_game_id = u8"drmario64.us";
+    constexpr std::u8string_view program_id = u8"puzzleleague64_recomp";
+    constexpr std::u8string_view mm_game_id = u8"puzzleleague64.usa";
 
     void load_config();
     void save_config();

@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/drmario64_recomp",
+            "program": "${workspaceFolder}/build/puzzleleague64",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
