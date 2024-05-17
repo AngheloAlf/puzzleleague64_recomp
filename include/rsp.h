@@ -88,7 +88,9 @@ static inline void dma_dmem_to_rdram(uint8_t* rdram, uint32_t dmem_addr, uint32_
     uint32_t wr_len = (sp_dma_wr_len >> 0) & 0xFF8;
 
     count += 1; // Count is inclusive
+
     wr_len += 1; // Write length is inclusive
+    wr_len = (wr_len + 7) & ~7;
 
     // fprintf(stderr, "\n");
     // fprintf(stderr, "dmem_addr: 0x%08X\n", dmem_addr);
