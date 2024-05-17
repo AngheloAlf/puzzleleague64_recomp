@@ -38,8 +38,16 @@ extern "C" void osViSetMode_recomp(uint8_t* rdram, recomp_context* ctx) {
 }
 
 extern "C" void osViGetCurrentLine_recomp(uint8_t* rdram, recomp_context* ctx) {
-    // TODO
-    ctx->r2 = 0;
+    // TODO: implement this properly
+
+    static int bogus_value = 0;
+
+    bogus_value++;
+    if (bogus_value > 240) {
+        bogus_value = 0;
+    }
+
+    ctx->r2 = bogus_value;
 }
 
 extern uint64_t total_vis;

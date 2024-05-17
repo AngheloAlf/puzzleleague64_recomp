@@ -240,7 +240,7 @@ extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
 extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_func_t) entrypoint, PTR(void) arg, PTR(void) sp, OSPri pri) {
     debug_printf("[os] Create Thread %d\n", id);
     OSThread *t = TO_PTR(OSThread, t_);
-    
+
     t->next = NULLPTR;
     t->queue = NULLPTR;
     t->priority = pri;
@@ -255,7 +255,10 @@ extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_f
 }
 
 extern "C" void osStopThread(RDRAM_ARG PTR(OSThread) t_) {
-    assert(false);
+    OSThread *t = TO_PTR(OSThread, t_);
+    debug_printf("[os] Stop Thread %d\n", t->id);
+
+    //assert(false);
 }
 
 extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {

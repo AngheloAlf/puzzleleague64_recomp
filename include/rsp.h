@@ -85,6 +85,8 @@ static inline void dma_rdram_to_dmem(uint8_t* rdram, uint32_t dmem_addr, uint32_
 static inline void dma_dmem_to_rdram(uint8_t* rdram, uint32_t dmem_addr, uint32_t dram_addr, uint32_t wr_len) {
     wr_len += 1; // Write length is inclusive
     dram_addr &= 0xFFFFF8;
+    fprintf(stderr, "dmem_addr: 0x%08X\n", dmem_addr);
+    fprintf(stderr, "wr_len: 0x%08X\n", wr_len);
     assert(dmem_addr + wr_len <= 0x1000);
     for (uint32_t i = 0; i < wr_len; i++) {
         MEM_B(0, (int64_t)(int32_t)(dram_addr + i + 0x80000000)) = RSP_MEM_B(i, dmem_addr);

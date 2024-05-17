@@ -9,6 +9,4 @@ stubs = [
 ]
 
 ignored = [
-    "func_800A24C0_usa",
-    "func_800A2EA4_usa",
 ]
