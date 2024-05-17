@@ -256,9 +256,17 @@ extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_f
 
 extern "C" void osStopThread(RDRAM_ARG PTR(OSThread) t_) {
     OSThread *t = TO_PTR(OSThread, t_);
-    debug_printf("[os] Stop Thread %d\n", t->id);
 
-    //assert(false);
+    debug_printf("[os] Stop Thread ");
+    if (t_ == NULLPTR) {
+        debug_printf("(NULL)\n");
+    } else {
+        debug_printf("%d\n", t->id);
+    }
+
+    fprintf(stderr, "osStopThread: t_ 0x%08X\n", t_);
+    fprintf(stderr, "osStopThread: t  %p\n", t);
+    fprintf(stderr, "\n", t);
 }
 
 extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {

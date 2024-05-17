@@ -76,20 +76,20 @@ struct RSP {
         auto operator=(__m128i value) { v128 = value; }
 #endif
 
-        auto byte(u32 index) -> uint8_t& { return ((uint8_t*)&u128)[15 - index]; }
-        auto byte(u32 index) const -> uint8_t { return ((uint8_t*)&u128)[15 - index]; }
+        auto byte(u32 index) -> uint8_t& { return ((uint8_t*)&u128)[15 - (index%16)]; }
+        auto byte(u32 index) const -> uint8_t { return ((uint8_t*)&u128)[15 - (index%16)]; }
 
-        auto element(u32 index) -> uint16_t& { return ((uint16_t*)&u128)[7 - index]; }
-        auto element(u32 index) const -> uint16_t { return ((uint16_t*)&u128)[7 - index]; }
+        auto element(u32 index) -> uint16_t& { return ((uint16_t*)&u128)[7 - (index%8)]; }
+        auto element(u32 index) const -> uint16_t { return ((uint16_t*)&u128)[7 - (index%8)]; }
 
-        auto u8(u32 index) -> uint8_t& { return ((uint8_t*)&u128)[15 - index]; }
-        auto u8(u32 index) const -> uint8_t { return ((uint8_t*)&u128)[15 - index]; }
+        auto u8(u32 index) -> uint8_t& { return ((uint8_t*)&u128)[15 - (index%16)]; }
+        auto u8(u32 index) const -> uint8_t { return ((uint8_t*)&u128)[15 - (index%16)]; }
 
-        auto s16(u32 index) -> int16_t& { return ((int16_t*)&u128)[7 - index]; }
-        auto s16(u32 index) const -> int16_t { return ((int16_t*)&u128)[7 - index]; }
+        auto s16(u32 index) -> int16_t& { return ((int16_t*)&u128)[7 - (index%8)]; }
+        auto s16(u32 index) const -> int16_t { return ((int16_t*)&u128)[7 - (index%8)]; }
 
-        auto u16(u32 index) -> uint16_t& { return ((uint16_t*)&u128)[7 - index]; }
-        auto u16(u32 index) const -> uint16_t { return ((uint16_t*)&u128)[7 - index]; }
+        auto u16(u32 index) -> uint16_t& { return ((uint16_t*)&u128)[7 - (index%8)]; }
+        auto u16(u32 index) const -> uint16_t { return ((uint16_t*)&u128)[7 - (index%8)]; }
 
         //VCx registers
         auto get(u32 index) const -> bool { return u16(index) != 0; }
