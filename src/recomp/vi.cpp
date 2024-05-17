@@ -37,6 +37,11 @@ extern "C" void osViSetMode_recomp(uint8_t* rdram, recomp_context* ctx) {
     osViSetMode(rdram, (int32_t)ctx->r4);
 }
 
+extern "C" void osViGetCurrentLine_recomp(uint8_t* rdram, recomp_context* ctx) {
+    // TODO
+    ctx->r2 = 0;
+}
+
 extern uint64_t total_vis;
 
 extern "C" void wait_one_frame(uint8_t* rdram, recomp_context* ctx) {

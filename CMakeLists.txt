@@ -138,6 +138,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/recomp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/sp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/errorasm.cpp
 
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
 
@@ -156,6 +157,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/ui/ui_rml_hacks.cpp
 
     ${CMAKE_SOURCE_DIR}/rsp/aspMain.cpp
+    ${CMAKE_SOURCE_DIR}/rsp/hvqm2sp1.cpp
 
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
 

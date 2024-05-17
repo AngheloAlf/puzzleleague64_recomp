@@ -261,6 +261,10 @@ extern "C" void osEPiReadIo_recomp(RDRAM_ARG recomp_context * ctx) {
     ctx->r2 = 0;
 }
 
+extern "C" void osEPiWriteIo_recomp(RDRAM_ARG recomp_context * ctx) {
+    fprintf(stderr, "TODO: osEPiWriteIo\n");
+}
+
 extern "C" void osPiGetStatus_recomp(RDRAM_ARG recomp_context * ctx) {
     ctx->r2 = 0;
 }

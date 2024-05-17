@@ -109,6 +109,10 @@ extern "C" void osContSetCh_recomp(uint8_t* rdram, recomp_context* ctx) {
     _return<s32>(ctx, 0);
 }
 
+extern "C" void osContReset_recomp(uint8_t* rdram, recomp_context* ctx) {
+    fprintf(stderr, "TODO: osContReset\n");
+}
+
 extern "C" void __osMotorAccess_recomp(uint8_t* rdram, recomp_context* ctx) {
     PTR(void) pfs = _arg<0, PTR(void)>(rdram, ctx);
     s32 flag = _arg<1, s32>(rdram, ctx);
