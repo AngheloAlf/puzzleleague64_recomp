@@ -249,6 +249,7 @@ void osViSetXScale(float scale);
 void osViSetYScale(float scale);
 PTR(void) osViGetNextFramebuffer();
 PTR(void) osViGetCurrentFramebuffer();
+u32 osViGetCurrentLine();
 u32 osGetCount();
 OSTime osGetTime();
 int osSetTimer(RDRAM_ARG PTR(OSTimer) timer, OSTime countdown, OSTime interval, PTR(OSMesgQueue) mq, OSMesg msg);
