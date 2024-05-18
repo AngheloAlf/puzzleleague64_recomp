@@ -70,15 +70,27 @@ static inline void RSP_MEM_H_STORE(uint32_t offset, uint32_t addr, uint32_t val)
 
 #define SET_DMA_DMEM(dmem_addr) dma_dmem_address = (dmem_addr)
 #define SET_DMA_DRAM(dram_addr) dma_dram_address = (dram_addr)
-#define DO_DMA_READ(rd_len) dma_rdram_to_dmem(rdram, dma_dmem_address, dma_dram_address, (rd_len))
+#define DO_DMA_READ(sp_dma_rdlen) dma_rdram_to_dmem(rdram, dma_dmem_address, dma_dram_address, (sp_dma_rdlen))
 #define DO_DMA_WRITE(sp_dma_wr_len) dma_dmem_to_rdram(rdram, dma_dmem_address, dma_dram_address, (sp_dma_wr_len))
 
-static inline void dma_rdram_to_dmem(uint8_t* rdram, uint32_t dmem_addr, uint32_t dram_addr, uint32_t rd_len) {
-    rd_len += 1; // Read length is inclusive
+static inline void dma_rdram_to_dmem(uint8_t* rdram, uint32_t dmem_addr, uint32_t dram_addr, uint32_t sp_dma_rdlen) {
+    uint32_t skip = (sp_dma_rdlen >> 20) & 0xFF8;
+    uint32_t count = (sp_dma_rdlen >> 12) & 0xFF;
+    uint32_t rd_len = (sp_dma_rdlen >> 0) & 0xFF8;
+
+    count += 1; // Count is inclusive
+
+    rd_len += 1; // Write length is inclusive
+    rd_len = (rd_len + 7) & ~7;
+
     dram_addr &= 0xFFFFF8;
     assert(dmem_addr + rd_len <= 0x1000);
-    for (uint32_t i = 0; i < rd_len; i++) {
-        RSP_MEM_B(i, dmem_addr) = MEM_B(0, (int64_t)(int32_t)(dram_addr + i + 0x80000000));
+    for (uint32_t row_number = 0; row_number < count; row_number++) {
+        for (uint32_t i = 0; i < rd_len; i++) {
+            RSP_MEM_B(i, dmem_addr) = MEM_B(0, (int64_t)(int32_t)(dram_addr + i + 0x80000000));
+        }
+
+        rdram += skip;
     }
 }
 
@@ -107,7 +119,6 @@ static inline void dma_dmem_to_rdram(uint8_t* rdram, uint32_t dmem_addr, uint32_
             MEM_B(0, (int64_t)(int32_t)(dram_addr + i + 0x80000000)) = RSP_MEM_B(i, dmem_addr);
         }
 
-        // Probably wrong
         rdram += skip;
     }
 }
