@@ -26,7 +26,8 @@ extern uint16_t rspInverseSquareRoots[512];
 static inline uint32_t RSP_MEM_W_LOAD(uint32_t offset, uint32_t addr) {
     uint32_t out;
     for (int i = 0; i < 4; i++) {
-        reinterpret_cast<uint8_t*>(&out)[i ^ 3] = RSP_MEM_BU(offset + i, addr);
+        uint8_t temp = RSP_MEM_BU(offset + i, addr);
+        reinterpret_cast<uint8_t*>(&out)[i ^ 3] = temp;
     }
     return out;
 }
@@ -68,10 +69,19 @@ static inline void RSP_MEM_H_STORE(uint32_t offset, uint32_t addr, uint32_t val)
 #define RSP_SIGNED(val) \
     ((int32_t)(val))
 
-#define SET_DMA_DMEM(dmem_addr) dma_dmem_address = (dmem_addr)
-#define SET_DMA_DRAM(dram_addr) dma_dram_address = (dram_addr)
-#define DO_DMA_READ(sp_dma_rdlen) dma_rdram_to_dmem(rdram, dma_dmem_address, dma_dram_address, (sp_dma_rdlen))
-#define DO_DMA_WRITE(sp_dma_wr_len) dma_dmem_to_rdram(rdram, dma_dmem_address, dma_dram_address, (sp_dma_wr_len))
+#if 1
+#define RSP_IO_DEBUG_PRINTF(...)
+#else
+#define RSP_IO_DEBUG_PRINTF(...) fprintf(stderr, __VA_ARGS__)
+#endif
+
+#define SET_DMA_DMEM(dmem_addr)             RSP_IO_DEBUG_PRINTF("line %i\nRSP I/O: SP_PBUS_ADDRESS <= %08x\n", __LINE__, dmem_addr);     dma_dmem_address = (dmem_addr)
+#define SET_DMA_DRAM(dram_addr)             RSP_IO_DEBUG_PRINTF("line %i\nRSP I/O: SP_DRAM_ADDRESS <= %08x\n", __LINE__, dram_addr);     dma_dram_address = (dram_addr)
+#define DO_DMA_READ(sp_dma_rdlen)           RSP_IO_DEBUG_PRINTF("line %i\nRSP I/O: SP_READ_LENGTH <= %08x\n", __LINE__, sp_dma_rdlen);   dma_rdram_to_dmem(rdram, dma_dmem_address, dma_dram_address, (sp_dma_rdlen))
+#define DO_DMA_WRITE(sp_dma_wr_len)         RSP_IO_DEBUG_PRINTF("line %i\nRSP I/O: SP_WRITE_LENGTH <= %08x\n", __LINE__, sp_dma_wr_len); dma_dmem_to_rdram(rdram, dma_dmem_address, dma_dram_address, (sp_dma_wr_len))
+#define rsp_uninplemented_semaphore(arg)    RSP_IO_DEBUG_PRINTF("line %i\nRSP I/O: SP_SEMAPHORE <= %08x\n", __LINE__, arg)
+#define rsp_uninplemented_status(arg)       RSP_IO_DEBUG_PRINTF("line %i\nRSP I/O: SP_STATUS <= %08x\n", __LINE__, arg)
+
 
 static inline void dma_rdram_to_dmem(uint8_t* rdram, uint32_t dmem_addr, uint32_t dram_addr, uint32_t sp_dma_rdlen) {
     uint32_t skip = (sp_dma_rdlen >> 20) & 0xFF8;
@@ -90,7 +100,7 @@ static inline void dma_rdram_to_dmem(uint8_t* rdram, uint32_t dmem_addr, uint32_
             RSP_MEM_B(i, dmem_addr) = MEM_B(0, (int64_t)(int32_t)(dram_addr + i + 0x80000000));
         }
 
-        rdram += skip;
+        dram_addr += skip;
     }
 }
 
@@ -119,7 +129,7 @@ static inline void dma_dmem_to_rdram(uint8_t* rdram, uint32_t dmem_addr, uint32_
             MEM_B(0, (int64_t)(int32_t)(dram_addr + i + 0x80000000)) = RSP_MEM_B(i, dmem_addr);
         }
 
-        rdram += skip;
+        dram_addr += skip;
     }
 }
 

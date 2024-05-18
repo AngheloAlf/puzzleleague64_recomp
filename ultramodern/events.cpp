@@ -261,6 +261,16 @@ void task_thread_func(uint8_t* rdram, moodycamel::LightweightSemaphore* thread_r
         }
         else if (task->t.type == M_HVQMTASK) {
             run_rsp_microcode(rdram, task, hvqm2sp1);
+            #if 0
+            FILE *bin = fopen("rdram.bin", "wb");
+            for (size_t i = 0; i < 4*1024*1024; i++) {
+                uint8_t temp[1];
+
+                temp[0] = MEM_B(0, (int64_t)(int32_t)(i + 0x80000000));
+                fwrite(temp, 1, 1, bin);
+            }
+            fclose(bin);
+            #endif
         }
         else {
             fprintf(stderr, "Unknown task type: %" PRIu32 "\n", task->t.type);

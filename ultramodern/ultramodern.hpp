@@ -162,7 +162,7 @@ void join_saving_thread();
 #if 0
 #define debug_printf(...)
 #else
-#define debug_printf(...) printf(__VA_ARGS__);
+#define debug_printf(...) fprintf(stderr, __VA_ARGS__);
 #endif
 
 #endif

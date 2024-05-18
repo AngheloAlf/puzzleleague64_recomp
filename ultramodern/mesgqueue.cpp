@@ -113,7 +113,7 @@ bool do_recv(RDRAM_ARG PTR(OSMesgQueue) mq_, PTR(OSMesg) msg_, bool block) {
     if (msg_ != NULLPTR) {
         *TO_PTR(OSMesg, msg_) = TO_PTR(OSMesg, mq->msg)[mq->first];
     }
-    
+
     mq->first = (mq->first + 1) % mq->msgCount;
     mq->validCount--;
 

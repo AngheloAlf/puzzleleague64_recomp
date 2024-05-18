@@ -50,10 +50,12 @@ typedef uint64_t gpr;
     *(uint32_t*)(rdram + ((((gpr)(reg) + (gpr)(offset) + 0)) - 0xFFFFFFFF80000000ULL)) = (uint32_t)((gpr)(val) >> 32); \
 }
 
-//#define SD(val, offset, reg) { \
-//    *(uint32_t*)(rdram + ((((gpr)(reg) + (gpr)(offset) + 4)) & 0x3FFFFFF)) = (uint32_t)((val) >> 32); \
-//    *(uint32_t*)(rdram + ((((gpr)(reg) + (gpr)(offset) + 0)) & 0x3FFFFFF)) = (uint32_t)((val) >> 0); \
-//}
+#if 0
+#define SD(val, offset, reg) { \
+    *(uint32_t*)(rdram + ((((gpr)(reg) + (gpr)(offset) + 4)) & 0x3FFFFFF)) = (uint32_t)((val) >> 32); \
+    *(uint32_t*)(rdram + ((((gpr)(reg) + (gpr)(offset) + 0)) & 0x3FFFFFF)) = (uint32_t)((val) >> 0); \
+}
+#endif
 
 static inline uint64_t load_doubleword(uint8_t* rdram, gpr reg, gpr offset) {
     uint64_t ret = 0;

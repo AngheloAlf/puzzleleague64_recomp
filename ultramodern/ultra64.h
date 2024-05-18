@@ -94,6 +94,21 @@ typedef enum {
     BLOCKED
 } OSThreadState;
 
+static inline const char *OSThreadState_GetName(uint16_t state) {
+    switch (state) {
+    case OSThreadState::STOPPED:
+        return "STOPPED";
+    case OSThreadState::QUEUED:
+        return "QUEUED";
+    case OSThreadState::RUNNING:
+        return "RUNNING";
+    case OSThreadState::BLOCKED:
+        return "BLOCKED";
+    default:
+        return "Unknown state";
+    }
+}
+
 typedef struct OSThread_t {
     PTR(struct OSThread_t) next; // Next thread in the given queue
     OSPri priority;

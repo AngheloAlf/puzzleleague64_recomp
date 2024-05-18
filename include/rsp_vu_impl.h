@@ -298,8 +298,8 @@ auto RSP::LWV(r128& vt, cr32& rs, s8 imm) -> void {
 
 template<u8 e>
 auto RSP::MFC2(r32& rt, cr128& vs) -> void {
-    auto hi = vs.byte(e + 0 & 15);
-    auto lo = vs.byte(e + 1 & 15);
+    auto hi = vs.byte((e + 0) & 15);
+    auto lo = vs.byte((e + 1) & 15);
     rt = s16(hi << 8 | lo << 0);
 }
 
