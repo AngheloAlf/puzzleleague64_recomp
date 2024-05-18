@@ -126,7 +126,7 @@ void wait_for_resumed(RDRAM_ARG UltraThreadContext* thread_context) {
 }
 
 void resume_thread(OSThread* t) {
-    debug_printf("[Thread] Resuming execution of thread %d\n", t->id);
+    debug_printf("[Thread] Resuming execution of thread %d %s\n", t->id, OSThreadState_GetName(t->state));
     t->context->running.signal();
 }
 
@@ -136,7 +136,7 @@ void run_next_thread(RDRAM_ARG1) {
     }
 
     OSThread* to_run = TO_PTR(OSThread, ultramodern::thread_queue_pop(PASS_RDRAM ultramodern::running_queue));
-    debug_printf("[Scheduling] Resuming execution of thread %d\n", to_run->id);
+    debug_printf("[Scheduling] Resuming execution of thread %d %s\n", to_run->id, OSThreadState_GetName(to_run->state));
     to_run->context->running.signal();
 }
 
@@ -154,7 +154,7 @@ void ultramodern::resume_thread_and_wait(RDRAM_ARG OSThread *t) {
 
 static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entrypoint, PTR(void) arg, UltraThreadContext* thread_context) {
     OSThread *self = TO_PTR(OSThread, self_);
-    debug_printf("[Thread] Thread created: %d\n", self->id);
+    debug_printf("[Thread] Thread created: %d %s\n", self->id, OSThreadState_GetName(self->state));
     thread_self = self_;
     is_game_thread = true;
 
@@ -162,6 +162,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     ultramodern::set_native_thread_name("Game Thread " + std::to_string(self->id));
     ultramodern::set_native_thread_priority(ultramodern::ThreadPriority::High);
 
+    /*
     // TODO fix these being hardcoded (this is only used for quicksaving)
     if ((self->id == 2 && self->priority == 5) || self->id == 13) { // slowly, flashrom
         temporary_threads.fetch_add(1);
@@ -169,18 +170,19 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
     else if (self->id != 1 && self->id != 2) { // ignore idle and fault
         permanent_threads.fetch_add(1);
     }
+    */
 
     // Signal the initialized semaphore to indicate that this thread can be started.
     thread_context->initialized.signal();
 
-    debug_printf("[Thread] Thread waiting to be started: %d\n", self->id);
+    debug_printf("[Thread] Thread waiting to be started: %d %s\n", self->id, OSThreadState_GetName(self->state));
 
     // Wait until the thread is marked as running.
     wait_for_resumed(PASS_RDRAM thread_context);
-    
+
     // Make sure the thread wasn't replaced or destroyed before it was started.
     if (self->context == thread_context) {
-        debug_printf("[Thread] Thread started: %d\n", self->id);
+        debug_printf("[Thread] Thread started: %d %s\n", self->id, OSThreadState_GetName(self->state));
         try {
             // Run the thread's function with the provided argument.
             run_thread_function(PASS_RDRAM entrypoint, self->sp, arg);
@@ -188,7 +190,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
         }
     }
     else {
-        debug_printf("[Thread] Thread destroyed before being started: %d\n", self->id);
+        debug_printf("[Thread] Thread destroyed before being started: %d %s\n", self->id, OSThreadState_GetName(self->state));
     }
 
     // Check if the thread hasn't been destroyed or replaced. If so, then the thread terminated or destroyed itself,
@@ -200,7 +202,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
 
     // Dispose of this thread now that it's completed or terminated.
     ultramodern::cleanup_thread(thread_context);
-    
+
     // TODO fix these being hardcoded (this is only used for quicksaving)
     if ((self->id == 2 && self->priority == 5) || self->id == 13) { // slowly, flashrom
         temporary_threads.fetch_sub(1);
@@ -217,12 +219,28 @@ uint32_t ultramodern::temporary_thread_count() {
 
 extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
     OSThread* t = TO_PTR(OSThread, t_);
-    debug_printf("[os] Start Thread %d\n", t->id);
+    debug_printf("[os] Start Thread %d, %s\n", t->id, OSThreadState_GetName(t->state));
 
+    debug_printf("\n\n    HERE\n\n");
+
+    switch (t->state) {
+    case STOPPED:
     // Wait until the thread is initialized to indicate that it's ready to be started.
     t->context->initialized.wait();
 
-    debug_printf("[os] Thread %d is ready to be started\n", t->id);
+        break;
+
+    case QUEUED:
+        break;
+
+    case RUNNING:
+    case BLOCKED:
+        fprintf(stderr, "%s: Thread %d has invalid state for starting a thread: %d(%s)\n", __func__, t->id, t->state, OSThreadState_GetName(t->state));
+        assert(false);
+        break;
+    }
+
+    debug_printf("[os] Thread %d (%s) is ready to be started\n", t->id, OSThreadState_GetName(t->state));
 
     // If this is a game thread, insert the new thread into the running queue and then check the running queue.
     if (thread_self) {
@@ -260,13 +278,36 @@ extern "C" void osStopThread(RDRAM_ARG PTR(OSThread) t_) {
     debug_printf("[os] Stop Thread ");
     if (t_ == NULLPTR) {
         debug_printf("(NULL)\n");
+        // I don't care about implmenting this yet.
+        assert(false);
+        return;
     } else {
-        debug_printf("%d\n", t->id);
+        debug_printf("%d %s\n", t->id, OSThreadState_GetName(t->state));
     }
 
     fprintf(stderr, "osStopThread: t_ 0x%08X\n", t_);
     fprintf(stderr, "osStopThread: t  %p\n", t);
-    fprintf(stderr, "\n", t);
+    fprintf(stderr, "\n");
+
+    switch (t->state) {
+    case STOPPED:
+        fprintf(stderr, "%s: Thread %d has invalid state for stopping a thread: %d(%s)\n", __func__, t->id, t->state, OSThreadState_GetName(t->state));
+        assert(false);
+        break;
+
+    case QUEUED:
+        ultramodern::thread_queue_remove(PASS_RDRAM t->queue, t_);
+        t->context->initialized.signal();
+        t->state = OSThreadState::STOPPED;
+        break;
+
+    case RUNNING:
+    case BLOCKED:
+        fprintf(stderr, "%s: Thread %d has invalid state for stopping a thread: %d(%s)\n", __func__, t->id, t->state, OSThreadState_GetName(t->state));
+        assert(false);
+        break;
+    }
+
 }
 
 extern "C" void osDestroyThread(RDRAM_ARG PTR(OSThread) t_) {

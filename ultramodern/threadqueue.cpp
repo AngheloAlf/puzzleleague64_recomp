@@ -13,7 +13,7 @@ static PTR(OSThread)* queue_to_ptr(RDRAM_ARG PTR(PTR(OSThread)) queue) {
 
 void ultramodern::thread_queue_insert(RDRAM_ARG PTR(PTR(OSThread)) queue_, PTR(OSThread) toadd_) {
     PTR(OSThread)* cur = queue_to_ptr(PASS_RDRAM queue_);
-    OSThread* toadd = TO_PTR(OSThread, toadd_); 
+    OSThread* toadd = TO_PTR(OSThread, toadd_);
     debug_printf("[Thread Queue] Inserting thread %d into queue 0x%08X\n", toadd->id, (uintptr_t)queue_);
     while (*cur && TO_PTR(OSThread, *cur)->priority > toadd->priority) {
         cur = &TO_PTR(OSThread, *cur)->next;
@@ -47,6 +47,7 @@ bool ultramodern::thread_queue_remove(RDRAM_ARG PTR(PTR(OSThread)) queue_, PTR(O
     while (cur != NULLPTR) {
         PTR(OSThread)* cur_ptr = queue_to_ptr(PASS_RDRAM queue_);
         if (*cur_ptr == t_) {
+            *cur_ptr = TO_PTR(OSThread, *cur_ptr)->next;
             return true;
         }
         cur = TO_PTR(OSThread, *cur_ptr)->next;
