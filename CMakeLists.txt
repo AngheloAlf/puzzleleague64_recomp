@@ -138,7 +138,6 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/recomp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/sp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
-    ${CMAKE_SOURCE_DIR}/src/recomp/errorasm.cpp
 
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
 

@@ -270,8 +270,8 @@ extern "C" gpr cop0_status_read(recomp_context* ctx) {
     return (gpr)(int32_t)ctx->status_reg;
 }
 
-extern "C" void switch_error(const char* func, uint32_t vram, uint32_t jtbl) {
-    printf("Switch-case out of bounds in %s at 0x%08X for jump table at 0x%08X\n", func, vram, jtbl);
+extern "C" void switch_error_impl(const char *file, int line, const char* func, uint32_t vram, uint32_t jtbl, gpr value) {
+    printf("%s:%d Switch-case out of bounds in %s at 0x%08X for jump table at 0x%08X. Had value 0x%08X\n", file, line, func, vram, jtbl, value);
     assert(false);
     exit(EXIT_FAILURE);
 }

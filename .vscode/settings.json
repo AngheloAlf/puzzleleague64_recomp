@@ -1,5 +1,6 @@
 {
     "[markdown]": {
         "editor.rulers": [80],
-    }
+    },
+    "workbench.settings.enableNaturalLanguageSearch": false
 }

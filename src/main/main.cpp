@@ -284,7 +284,7 @@ int main(int argc, char** argv) {
     };
 
     recomp::start({}, audio_callbacks, input_callbacks, gfx_callbacks);
-    
+
     NFD_Quit();
 
     return EXIT_SUCCESS;

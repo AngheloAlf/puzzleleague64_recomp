@@ -134,7 +134,7 @@ static inline void do_swr(uint8_t* rdram, gpr offset, gpr reg, gpr val) {
 
 #define S32(val) \
     ((int32_t)(val))
-    
+
 #define U32(val) \
     ((uint32_t)(val))
 
@@ -261,7 +261,8 @@ extern "C" {
 
 void cop0_status_write(recomp_context* ctx, gpr value);
 gpr cop0_status_read(recomp_context* ctx);
-void switch_error(const char* func, uint32_t vram, uint32_t jtbl);
+void switch_error_impl(const char *file, int line, const char* func, uint32_t vram, uint32_t jtbl, gpr value);
+#define switch_error(func, vram, jtbl, value) switch_error_impl(__FILE__, __LINE__, func, vram, jtbl, value)
 void do_break(uint32_t vram);
 
 typedef void (recomp_func_t)(uint8_t* rdram, recomp_context* ctx);
