@@ -179,7 +179,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
 
     // Wait until the thread is marked as running.
     wait_for_resumed(PASS_RDRAM thread_context);
-
+    
     // Make sure the thread wasn't replaced or destroyed before it was started.
     if (self->context == thread_context) {
         debug_printf("[Thread] Thread started: %d %s\n", self->id, OSThreadState_GetName(self->state));
@@ -202,7 +202,7 @@ static void _thread_func(RDRAM_ARG PTR(OSThread) self_, PTR(thread_func_t) entry
 
     // Dispose of this thread now that it's completed or terminated.
     ultramodern::cleanup_thread(thread_context);
-
+    
     // TODO fix these being hardcoded (this is only used for quicksaving)
     if ((self->id == 2 && self->priority == 5) || self->id == 13) { // slowly, flashrom
         temporary_threads.fetch_sub(1);
@@ -258,7 +258,7 @@ extern "C" void osStartThread(RDRAM_ARG PTR(OSThread) t_) {
 extern "C" void osCreateThread(RDRAM_ARG PTR(OSThread) t_, OSId id, PTR(thread_func_t) entrypoint, PTR(void) arg, PTR(void) sp, OSPri pri) {
     debug_printf("[os] Create Thread %d\n", id);
     OSThread *t = TO_PTR(OSThread, t_);
-
+    
     t->next = NULLPTR;
     t->queue = NULLPTR;
     t->priority = pri;

@@ -76,22 +76,16 @@ target_sources(RecompiledFuncs PRIVATE ${FUNC_C_SOURCES} ${FUNC_CXX_SOURCES})
 # set_source_files_properties(${CMAKE_SOURCE_DIR}/RecompiledPatches/patches.c PROPERTIES COMPILE_FLAGS -fno-strict-aliasing)
 
 # Build patches elf
-add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.bin
+add_custom_target(PatchesBin
     COMMAND make
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/patches
-    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin}
+    BYPRODUCTS ${CMAKE_SOURCE_DIR}/patches/patches.bin
 )
 
 # Generate patches_bin.c from patches.bin
 # add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c
 #     COMMAND file_to_c ${CMAKE_SOURCE_DIR}/patches/patches.bin mm_patches_bin ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.c ${CMAKE_SOURCE_DIR}/RecompiledPatches/patches_bin.h 
 #     DEPENDS ${CMAKE_SOURCE_DIR}/patches/patches.bin
-# )
-
-# Generate mm_shader_cache.c from the MM shader cache
-# add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-#     COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
-#     DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
 # )
 
 # Recompile patches elf into patches.c
@@ -107,6 +101,16 @@ add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/patches/patches.bin
 
 # Main executable
 add_executable(puzzleleague64_recomp)
+
+# # Generate mm_shader_cache.c from the MM shader cache if it exists
+# if (EXISTS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin)
+#     set(HAS_MM_SHADER_CACHE TRUE)
+#     target_compile_definitions(puzzleleague64_recomp PRIVATE HAS_MM_SHADER_CACHE)
+#     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+#         COMMAND file_to_c ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin mm_shader_cache_bytes ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.h
+#         DEPENDS ${CMAKE_SOURCE_DIR}/shadercache/mm_shader_cache.bin
+#     )
+# endif()
 
 set (SOURCES
     ${CMAKE_SOURCE_DIR}/ultramodern/audio.cpp
@@ -127,6 +131,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/dp.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/eep.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/euc-jp.cpp
+    ${CMAKE_SOURCE_DIR}/src/recomp/files.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/flash.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/math_routines.cpp
     ${CMAKE_SOURCE_DIR}/src/recomp/overlays.cpp
@@ -140,7 +145,7 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/src/recomp/vi.cpp
 
     ${CMAKE_SOURCE_DIR}/src/main/main.cpp
-
+    
     ${CMAKE_SOURCE_DIR}/src/game/input.cpp
     ${CMAKE_SOURCE_DIR}/src/game/controls.cpp
     ${CMAKE_SOURCE_DIR}/src/game/config.cpp
@@ -159,9 +164,11 @@ set (SOURCES
     ${CMAKE_SOURCE_DIR}/rsp/hvqm2sp1.cpp
 
     ${CMAKE_SOURCE_DIR}/lib/RmlUi/Backends/RmlUi_Platform_SDL.cpp
-
-#    ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c
 )
+
+if (HAS_MM_SHADER_CACHE)
+    list(APPEND SOURCES ${CMAKE_CURRENT_BINARY_DIR}/mm_shader_cache.c)
+endif()
 
 target_include_directories(puzzleleague64_recomp PRIVATE
     ${CMAKE_SOURCE_DIR}/include
@@ -175,18 +182,27 @@ target_include_directories(puzzleleague64_recomp PRIVATE
     ${CMAKE_SOURCE_DIR}/lib/rt64/src
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/rhi
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/render
+    ${CMAKE_SOURCE_DIR}/lib/sse2neon
     ${CMAKE_SOURCE_DIR}/lib/freetype-windows-binaries/include
     ${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/nativefiledialog-extended/src/include
     ${CMAKE_BINARY_DIR}/shaders
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_compile_options(puzzleleague64_recomp PRIVATE
-    -march=nehalem
-    -fno-strict-aliasing
-    -fms-extensions
-    -ggdb
-)
+if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+    target_compile_options(puzzleleague64_recomp PRIVATE
+        -march=nehalem
+        -fno-strict-aliasing
+        -fms-extensions
+        -ggdb
+    )
+else()
+    target_compile_options(puzzleleague64_recomp PRIVATE
+        -fno-strict-aliasing
+        -fms-extensions
+        -ggdb
+    )
+endif()
 
 # Add ASAN to everything
 # add_compile_options(-fsanitize=address)
@@ -219,7 +235,7 @@ if (WIN32)
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxil.dll"
             "${CMAKE_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxcompiler.dll"
             $<TARGET_FILE_DIR:puzzleleague64_recomp>)
-
+            
     set_target_properties(
         puzzleleague64_recomp
         PROPERTIES
@@ -235,6 +251,13 @@ endif()
 if (LINUX)
     find_package(SDL2 REQUIRED)
     find_package(X11 REQUIRED)
+    
+    # Generate icon_bytes.c from the app icon PNG.
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.h
+        COMMAND file_to_c ${CMAKE_SOURCE_DIR}/icons/512.png icon_bytes ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.h 
+        DEPENDS ${CMAKE_SOURCE_DIR}/icons/512.png
+    )
+    target_sources(puzzleleague64_recomp PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/icon_bytes.c)
 
     message(STATUS "SDL2_FOUND = ${SDL2_FOUND}")
     message(STATUS "SDL2_INCLUDE_DIRS = ${SDL2_INCLUDE_DIRS}")
@@ -261,7 +284,7 @@ if (LINUX)
     set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
     set(THREADS_PREFER_PTHREAD_FLAG TRUE)
     find_package(Threads REQUIRED)
-
+    
     target_link_libraries(puzzleleague64_recomp PRIVATE "-latomic -static-libstdc++" ${CMAKE_DL_LIBS} Threads::Threads)
 endif()
 
@@ -270,15 +293,10 @@ target_link_libraries(puzzleleague64_recomp PRIVATE
     RecompiledFuncs
     SDL2
     rt64
-#     RmlCore
-    rmlui
-#     RmlDebugger
-    rmlui_debugger
+    RmlCore
+    RmlDebugger
     nfd
     lunasvg
-
-# Linux only
-    Xrandr
 )
 
 # TODO fix the rt64 CMake script so that this doesn't need to be duplicated here
@@ -296,7 +314,19 @@ if (${WIN32})
     set (DXC "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc.exe")
     add_compile_definitions(NOMINMAX)
 else()
-    set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+        if (APPLE)
+            set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
+        else()
+            set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/x64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/x64/dxc")
+        endif()
+    else()
+        if (APPLE)
+            set (DXC "DYLD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-macos")
+        else()
+            set (DXC "LD_LIBRARY_PATH=${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/lib/arm64" "${PROJECT_SOURCE_DIR}/lib/rt64/src/contrib/dxc/bin/arm64/dxc-linux")
+        endif()
+    endif()
 endif()
 
 build_vertex_shader(puzzleleague64_recomp "shaders/InterfaceVS.hlsl" "shaders/InterfaceVS.hlsl")

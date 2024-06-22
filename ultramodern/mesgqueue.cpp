@@ -90,7 +90,7 @@ bool do_send(RDRAM_ARG PTR(OSMesgQueue) mq_, OSMesg msg, bool jam, bool block) {
     if (!ultramodern::thread_queue_empty(PASS_RDRAM blocked_queue)) {
         ultramodern::schedule_running_thread(PASS_RDRAM ultramodern::thread_queue_pop(PASS_RDRAM blocked_queue));
     }
-
+    
     return true;
 }
 
@@ -113,7 +113,7 @@ bool do_recv(RDRAM_ARG PTR(OSMesgQueue) mq_, PTR(OSMesg) msg_, bool block) {
     if (msg_ != NULLPTR) {
         *TO_PTR(OSMesg, msg_) = TO_PTR(OSMesg, mq->msg)[mq->first];
     }
-
+    
     mq->first = (mq->first + 1) % mq->msgCount;
     mq->validCount--;
 
